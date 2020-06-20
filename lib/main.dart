@@ -15,6 +15,9 @@ const GREEN = Color(0xFF56B12C);
 const GRAY = Color(0xFF505050);
 
 class TatoebaViewer extends StatelessWidget {
+
+  static final homePageKey = new GlobalKey<_HomePageState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,49 +36,72 @@ class TatoebaViewer extends StatelessWidget {
           primarySwatch: Colors.green,
 //          primaryColor: Colors.red
       ),
-      home: HomePage(),
+      home: HomePage(
+        key: homePageKey
+      ),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+
+  const HomePage({Key key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+
+  TabController tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = new TabController(vsync: this, length: 4);
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      // The number of tabs / content sections to display.
-      length: 4,
-      child: Scaffold(
-        bottomNavigationBar: Container(
-            color: Color(0xFF505050),
-            child: new TabBar(
-              tabs: [
-                Tab(
-                  icon: new Icon(Icons.search),
-                ),
-                Tab(
-                  icon: new Icon(Icons.list),
-                ),
-                Tab(
-                  icon: new Icon(Icons.favorite_border),
-                ),
-                Tab(
-                  icon: new Icon(Icons.settings),
-                )
-              ],
-              labelColor: Colors.white,
-              unselectedLabelColor: Color(0xFF56B12C),
-              indicatorWeight: 4,
+    return Scaffold(
+      bottomNavigationBar: Container(
+          color: Color(0xFF505050),
+          child: new TabBar(
+            controller: tabController,
+            tabs: [
+              Tab(
+                icon: new Icon(Icons.search),
+              ),
+              Tab(
+                icon: new Icon(Icons.list),
+              ),
+              Tab(
+                icon: new Icon(Icons.favorite_border),
+              ),
+              Tab(
+                icon: new Icon(Icons.settings),
+              )
+            ],
+            labelColor: Colors.white,
+            unselectedLabelColor: Color(0xFF56B12C),
+            indicatorWeight: 4,
 //              indicatorPadding: EdgeInsets.all(5.0),
-              indicatorColor: Colors.white,
-            )),
-        body: TabBarView(
-          children: [
-            Search(),
-            Results(),
-            Favorites(),
-            Settings(),
-          ],
-        ),
+            indicatorColor: Colors.white,
+          )),
+      body: TabBarView(
+        controller: tabController,
+        children: [
+          Search(),
+          Results(),
+          Favorites(),
+          Settings(),
+        ],
       ),
     );
   }

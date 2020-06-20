@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../main.dart';
+
 class EmptyState extends StatelessWidget {
 
   final String title;
@@ -33,7 +35,9 @@ class EmptyState extends StatelessWidget {
           padding: EdgeInsets.only(top: 16),
           child: RaisedButton(
             child: Text('Search some sentences'),
-            onPressed: () {},
+            onPressed: () {
+              TatoebaViewer.homePageKey.currentState.tabController.animateTo(0);
+            },
           ),
         )
       ],

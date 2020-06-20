@@ -1,10 +1,49 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../main.dart';
 import '../views/Picker.dart';
+import 'package:http/http.dart' as http;
 
 bool _lights = true;
 
-class Search extends StatelessWidget {
+const GREEN = Color(0xFF56B12C);
+const GRAY = Color(0xFF505050);
+
+//Future<http.Response> fetchSearch() async {
+Future<Map<String, dynamic>> fetchSearch() async {
+  final response = await http.get('https://tatoeba.free.beeceptor.com/query/search');
+
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    Map<String, dynamic> jsonBody = json.decode(response.body);
+    return jsonBody;
+//    if (jsonBody != null) {
+//      print(jsonBody);
+//    } else {
+//      print('empty response');
+//    }
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load album');
+  }
+
+}
+
+class Search extends StatefulWidget {
+  @override
+  _SearchState createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
+
+  Map<String, dynamic> _searchResponse;
+  String _errorResponse;
+  bool apiCall = false; // New variable
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -103,8 +142,26 @@ class Search extends StatelessWidget {
                               shape: new CircleBorder(),
                               fillColor: Colors.white,
                               elevation: 5.0,
-                              child: Icon(Icons.search, size: 50, color: GREEN),
-                              onPressed: () => '{}',
+                              child: !apiCall? Icon(Icons.search, size: 50, color: GREEN) : CircularProgressIndicator(),
+                              onPressed: () {
+                                setState(() {
+                                  apiCall=true; // Set state like this
+                                });
+                                fetchSearch().then((response) {
+                                  setState(() {
+                                    apiCall= false; //Disable Progressbar
+                                    _searchResponse = response;
+                                    print(_searchResponse);
+                                    TatoebaViewer.homePageKey.currentState.tabController.animateTo(1);
+                                  });
+                                }, onError: (error)
+                                {
+                                  setState(() {
+                                    apiCall = false; //Disable Progressbar
+                                    _errorResponse = error.toString();
+                                  });
+                                });
+                              },
                             )),
                       ),
                     )
