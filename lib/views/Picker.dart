@@ -58,7 +58,7 @@ class Picker extends StatelessWidget {
                       'Spanish',
                       'Italian',
                       'Chinese'].map((lang) => ListTile(
-                      leading: Icon(Icons.accessibility),
+                      leading: Icon(Icons.language, color: Colors.white,),
                       title: Text(lang, style: TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),),
                     )).toList(),
                   ),

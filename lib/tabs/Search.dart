@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mobile/elements/Sentence.dart';
+import 'package:mobile/notifiers/SearchResultsNotifier.dart';
+import 'package:mobile/serializers/SentenceSerializer.dart';
+import 'package:provider/provider.dart';
 import '../main.dart';
 import '../views/Picker.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +17,7 @@ const GRAY = Color(0xFF505050);
 
 //Future<http.Response> fetchSearch() async {
 Future<Map<String, dynamic>> fetchSearch() async {
-  final response = await http.get('https://tatoeba.free.beeceptor.com/query/search');
+  final response = await http.get('https://tatoeba.free.beeceptor.com/search');
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
@@ -151,6 +155,12 @@ class _SearchState extends State<Search> {
                                   setState(() {
                                     apiCall= false; //Disable Progressbar
                                     _searchResponse = response;
+                                    List<SentenceSerializer> serializedSentences = [];
+                                    List<dynamic> resultSentencesJSON = _searchResponse["results"];
+                                    resultSentencesJSON.forEach((sentenceJSON) {
+                                      serializedSentences.add(SentenceSerializer.fromJson(sentenceJSON));
+                                    });
+                                    Provider.of<SearchResultsNotifier>(context, listen: false).replaceAll(serializedSentences);
                                     print(_searchResponse);
                                     TatoebaViewer.homePageKey.currentState.tabController.animateTo(1);
                                   });

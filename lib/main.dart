@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mobile/notifiers/SearchResultsNotifier.dart';
+import 'package:provider/provider.dart';
 
 import 'tabs/Search.dart';
 import 'tabs/Results.dart';
@@ -42,6 +44,8 @@ class TatoebaViewer extends StatelessWidget {
     );
   }
 }
+
+
 
 class HomePage extends StatefulWidget {
 
@@ -94,14 +98,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 //              indicatorPadding: EdgeInsets.all(5.0),
             indicatorColor: Colors.white,
           )),
-      body: TabBarView(
-        controller: tabController,
-        children: [
-          Search(),
-          Results(),
-          Favorites(),
-          Settings(),
-        ],
+      body: ChangeNotifierProvider(
+        create: (context) => SearchResultsNotifier(),
+        child: TabBarView(
+          controller: tabController,
+          children: [
+            Search(),
+            Results(),
+            Favorites(),
+            Settings(),
+          ],
+        ),
       ),
     );
   }
