@@ -1,9 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:mobile/elements/Sentence.dart';
-import 'package:mobile/notifiers/SearchResultsNotifier.dart';
-import 'package:mobile/serializers/SentenceSerializer.dart';
+import 'package:tatoeba_viewer/elements/Sentence.dart';
+import 'package:tatoeba_viewer/notifiers/SearchResultsNotifier.dart';
 import 'package:provider/provider.dart';
 import '../elements/EmptyState.dart';
 import '../elements/Sentence.dart';
@@ -29,7 +28,7 @@ class Results extends StatelessWidget {
                   color: Colors.white, fontSize: 20,
                 ),),
               )] +
-                  results.sentences.map((sentence_data) => Sentence(sentence_data)).toList()
+                  results.sentences.toList()
             ,) :
                   // ELSE
             EmptyState(title: 'Search something', subtitle: 'In this section the searched sentences will appear', iconName: Icons.list);

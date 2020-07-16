@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile/notifiers/SearchResultsNotifier.dart';
+import 'package:tatoeba_viewer/notifiers/SearchResultsNotifier.dart';
 import 'package:provider/provider.dart';
 
 import 'tabs/Search.dart';

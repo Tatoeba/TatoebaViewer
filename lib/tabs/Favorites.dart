@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:mobile/elements/Sentence.dart';
-import 'package:mobile/serializers/SentenceSerializer.dart';
+import 'package:tatoeba_viewer/elements/Sentence.dart';
 import '../Database.dart';
 import '../elements/EmptyState.dart';
 
@@ -35,13 +34,11 @@ class _FavoritesState extends State<Favorites> {
     return Container(
       color: GREEN,
       child: SafeArea(
-          child: Column(
+          child: ListView(
             children:
             favorites.length > 0?
-              favorites.map((e) => Sentence(
-                SentenceSerializer.fromJson(json.decode(e.jsonData))
-            )).toList() :
-             [EmptyState(title: 'No favorites yet', subtitle: 'Add some sentences to conveniently access them, even offline', iconName: Icons.favorite_border)],
+              favorites.map((e) => Sentence.fromJson(json.decode(e.jsonData), addedFav: true,)).toList() :
+             [Center(child: EmptyState(title: 'No favorites yet', subtitle: 'Add some sentences to conveniently access them, even offline', iconName: Icons.favorite_border))],
           )
       ),
     );

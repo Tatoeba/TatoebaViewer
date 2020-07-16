@@ -69,7 +69,20 @@ class Favorite {
     });
   }
 
-  Future<void> delete() async {
+  static Future<Set<int>> getInFavoriteIds() async {
+    // Get a reference to the database.
+    final Database db = await getDatabase();
+
+    // Query the table for all The Dogs.
+    final List<Map<String, dynamic>> idsMap = await db.query('favorites', columns: ['id']);
+    Set<int> setInt = Set<int>();
+    idsMap.forEach((row) {
+      setInt.add(row['id']);
+    });
+    return setInt;
+  }
+
+  static Future<void> delete(int id) async {
     // Get a reference to the database.
     final db = await getDatabase();
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:clipboard_manager/clipboard_manager.dart';
-import 'package:mobile/serializers/SentenceSerializer.dart';
 
 import '../Database.dart';
 
@@ -8,11 +7,10 @@ const GREEN = Color(0xFF56B12C);
 const GRAY = Color(0xFF505050);
 
 class AddFavorite extends StatefulWidget {
-  bool initiallyAdded = false;
+  final bool added;
+  final Sentence sentence;
 
-  AddFavorite({bool added = false}) {
-    initiallyAdded = added;
-  }
+  AddFavorite({this.sentence, this.added});
 
   @override
   _AddFavoriteState createState() => _AddFavoriteState();
@@ -22,16 +20,18 @@ class _AddFavoriteState extends State<AddFavorite> {
 
   bool added = false;
   Favorite favorite;
+
   @override
   void initState() {
-    added = widget.initiallyAdded;
+    added = widget.added;
     super.initState();
   }
 
-  insertSQLite() async {
+  saveFavorite() async {
     favorite = Favorite(
-      id: 1,
-      jsonData: '{"id": 1, "text": "I am the first favorite!", "language": "eng", "author": "Quielin", "translations": [{"id": 2, "text": "我是个例子！", "language": "zhi", "author": "Aday"}, {"id": 3, "text": "Eu soy uno ejemplo!", "language": "ita", "author": "Trang"}]}',
+      id: widget.sentence.id,
+      //TODO: probably is better to save the map and then transform it to json
+      jsonData: '{"id": ${widget.sentence.id}, "text": "${widget.sentence.text}", "language": "${widget.sentence.language}", "author": "${widget.sentence.author}", "translations": [{"id": 2, "text": "我是个例子！", "language": "zhi", "author": "Aday"}, {"id": 3, "text": "Eu soy uno ejemplo!", "language": "ita", "author": "Trang"}]}',
     );
     await favorite.insert();
   }
@@ -41,13 +41,13 @@ class _AddFavoriteState extends State<AddFavorite> {
     return GestureDetector(
       onTap: () async {
         if (!added) {
-          await insertSQLite();
+          await saveFavorite();
           setState(() {
             added = true;
           });
           print("agregado a favoritos");
         } else {
-          await favorite.delete();
+          await Favorite.delete(widget.sentence.id);
           setState(() {
             added = false;
           });
@@ -65,31 +65,32 @@ class _AddFavoriteState extends State<AddFavorite> {
 
 class Sentence extends StatelessWidget {
 
-  int id;
-  String text;
-  String language;
-  String author;
-  List<SentenceSerializer> translations;
+  final int id;
+  final String text;
+  final String language;
+  final String author;
+  final List<Sentence> translations;
+  final bool added;
 
+  Sentence({this.id, this.author, this.text, this.language, this.translations, this.added = false});
 
-  Sentence(SentenceSerializer sentence) {
-    id = sentence.id;
-    text = sentence.text;
-    language = sentence.language;
-    author = sentence.author;
-    translations = sentence.translations;
+  factory Sentence.fromJson(Map<String, dynamic> json, {addedFav = false}) {
+    List<Sentence> localTranslations = [];
+    if (json.containsKey('translations')) {
+      List<dynamic> translations2Serialize = json['translations'];
+      translations2Serialize.forEach((translation2Serialize) {
+        localTranslations.add(Sentence.fromJson(translation2Serialize));
+      });
+    }
+    return Sentence(
+      id: json['id'],
+      text: json['text'],
+      author: json['user'],
+      language: json['language'],
+      translations: localTranslations,
+      added: addedFav,
+    );
   }
-
-  // Create a Dog and add it to the dogs table.
-
-//  {
-//    "id": 111,
-//    "text": "I am an example",
-//    "language": "eng",
-//    "author": "quielin",
-//    "audio": true,
-//    "translations": []
-//  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +114,7 @@ class Sentence extends StatelessWidget {
                     height: 10,
                   ),
                 ),
-                AddFavorite(added: false),
+                AddFavorite(sentence: this, added: added),
                 SizedBox(
                   width: 10,
                 ),

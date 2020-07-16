@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile/elements/Sentence.dart';
-import 'package:mobile/notifiers/SearchResultsNotifier.dart';
-import 'package:mobile/serializers/SentenceSerializer.dart';
+import 'package:tatoeba_viewer/Database.dart';
+import 'package:tatoeba_viewer/elements/Sentence.dart';
+import 'package:tatoeba_viewer/notifiers/SearchResultsNotifier.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../views/Picker.dart';
@@ -16,6 +16,7 @@ const GREEN = Color(0xFF56B12C);
 const GRAY = Color(0xFF505050);
 
 //Future<http.Response> fetchSearch() async {
+
 Future<Map<String, dynamic>> fetchSearch() async {
   final response = await http.get('https://tatoeba.free.beeceptor.com/search');
 
@@ -34,7 +35,6 @@ Future<Map<String, dynamic>> fetchSearch() async {
     // then throw an exception.
     throw Exception('Failed to load album');
   }
-
 }
 
 class Search extends StatefulWidget {
@@ -43,7 +43,6 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
-
   Map<String, dynamic> _searchResponse;
   String _errorResponse;
   bool apiCall = false; // New variable
@@ -78,7 +77,6 @@ class _SearchState extends State<Search> {
                               fontSize: 20,
                               color: Colors.white,
                             )),
-
                       ],
                     ),
                   ),
@@ -94,14 +92,17 @@ class _SearchState extends State<Search> {
                     Expanded(
                       child: TextField(
                         style: TextStyle(fontSize: 25),
-                        decoration:
-                        InputDecoration(border: InputBorder.none, hintText: 'search'),
+                        decoration: InputDecoration(
+                            border: InputBorder.none, hintText: 'search'),
                       ),
                     ),
-                    Icon(Icons.more_vert, color: GREEN, size: 34,)
+                    Icon(
+                      Icons.more_vert,
+                      color: GREEN,
+                      size: 34,
+                    )
                   ],
-                )
-            ),
+                )),
             Expanded(
               child: Container(
                 padding: EdgeInsets.all(16),
@@ -119,24 +120,24 @@ class _SearchState extends State<Search> {
                               color: Colors.white),
                         ),
                         onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Picker()),
-                        ),
+                              context,
+                              MaterialPageRoute(builder: (context) => Picker()),
+                            ),
                         highlightColor: Colors.red,
                         shape: new RoundedRectangleBorder(
                             borderRadius: new BorderRadius.circular(4.0))),
                     SwitchListTile(
                       contentPadding: EdgeInsets.all(0),
-                      title: const Text('Translated to favorite language',
+                      title: const Text(
+                        'Translated to favorite language',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
-                            fontWeight: FontWeight.bold
-                        ),),
+                            fontWeight: FontWeight.bold),
+                      ),
                       value: _lights,
                       onChanged: (bool value) {},
                     ),
-
                     Expanded(
                       child: Center(
                         child: Container(
@@ -146,31 +147,44 @@ class _SearchState extends State<Search> {
                               shape: new CircleBorder(),
                               fillColor: Colors.white,
                               elevation: 5.0,
-                              child: !apiCall? Icon(Icons.search, size: 50, color: GREEN) : CircularProgressIndicator(),
+                              child: !apiCall
+                                  ? Icon(Icons.search, size: 50, color: GREEN)
+                                  : CircularProgressIndicator(),
                               onPressed: () {
                                 setState(() {
-                                  apiCall=true; // Set state like this
+                                  apiCall = true; // Set state like this
                                 });
-                                fetchSearch().then((response) {
-                                  setState(() {
-                                    apiCall= false; //Disable Progressbar
-                                    _searchResponse = response;
-                                    List<SentenceSerializer> serializedSentences = [];
-                                    List<dynamic> resultSentencesJSON = _searchResponse["results"];
-                                    resultSentencesJSON.forEach((sentenceJSON) {
-                                      serializedSentences.add(SentenceSerializer.fromJson(sentenceJSON));
+                                Favorite.getInFavoriteIds().then((ids) => {
+                                      fetchSearch().then((response) {
+                                        setState(() {
+                                          apiCall = false; //Disable Progressbar
+                                          _searchResponse = response;
+                                          List<Sentence> serializedSentences =
+                                              [];
+                                          List<dynamic> resultSentencesJSON =
+                                              _searchResponse["results"];
+                                          resultSentencesJSON
+                                              .forEach((sentenceJSON) {
+                                            serializedSentences.add(
+                                                Sentence.fromJson(
+                                                    sentenceJSON, addedFav: ids.contains(sentenceJSON['id']),));
+                                          });
+                                          Provider.of<SearchResultsNotifier>(
+                                                  context,
+                                                  listen: false)
+                                              .replaceAll(serializedSentences);
+                                          print(_searchResponse);
+                                          TatoebaViewer.homePageKey.currentState
+                                              .tabController
+                                              .animateTo(1);
+                                        });
+                                      }, onError: (error) {
+                                        setState(() {
+                                          apiCall = false; //Disable Progressbar
+                                          _errorResponse = error.toString();
+                                        });
+                                      })
                                     });
-                                    Provider.of<SearchResultsNotifier>(context, listen: false).replaceAll(serializedSentences);
-                                    print(_searchResponse);
-                                    TatoebaViewer.homePageKey.currentState.tabController.animateTo(1);
-                                  });
-                                }, onError: (error)
-                                {
-                                  setState(() {
-                                    apiCall = false; //Disable Progressbar
-                                    _errorResponse = error.toString();
-                                  });
-                                });
                               },
                             )),
                       ),
